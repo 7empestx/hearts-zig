@@ -3,25 +3,62 @@ const print = std.debug.print;
 const RndGen = std.rand.DefaultPrng;
 
 const cards_in_deck: u8 = 52;
+const player_count: u8 = 4;
+const cards_per_player: u8 = cards_in_deck / player_count;
 
 const Card = struct { suit: []const u8, rank: []const u8 };
 const Deck = struct { cards: [cards_in_deck]Card };
+const Player = struct { player_cards: [cards_per_player]Card };
+const Game = struct { players: [player_count]Player };
 
 pub fn main() !void {
     // Create a base deck of cards
     const deck = generateDeck();
 
-    const gameDeck = shuffleDeck(deck);
-    printDeck(gameDeck);
-
     // Randomize deck of cards to new deck
+    const gameDeck = shuffleDeck(deck);
+
     // Assign the first 13 cards to the first player and so on
+    const players = dealCardsToPlayers(gameDeck);
+    printPlayer(players[0]);
+    printPlayer(players[1]);
+    printPlayer(players[2]);
+    printPlayer(players[3]);
+
+    // Create game
+    const game = Game{ .players = players };
+    _ = game;
+}
+
+fn dealCardsToPlayers(gameDeck: Deck) [4]Player {
+    const player1Cards: [cards_per_player]Card = gameDeck.cards[0..13].*;
+    const player2Cards: [cards_per_player]Card = gameDeck.cards[13..26].*;
+    const player3Cards: [cards_per_player]Card = gameDeck.cards[26..39].*;
+    const player4Cards: [cards_per_player]Card = gameDeck.cards[39..52].*;
+
+    // Create players
+    const player1 = Player{ .player_cards = player1Cards };
+    const player2 = Player{ .player_cards = player2Cards };
+    const player3 = Player{ .player_cards = player3Cards };
+    const player4 = Player{ .player_cards = player4Cards };
+
+    return [4]Player{ player1, player2, player3, player4 };
+}
+
+fn printPlayer(player: Player) void {
+    print("Printing Player\n", .{});
+    for (player.player_cards) |c| {
+        print("{s} of {s}\n", .{ c.rank, c.suit });
+    }
+    print("\n", .{});
 }
 
 fn printDeck(deck: Deck) void {
+    print("Printing Deck\n", .{});
     for (deck.cards) |c| {
-        print("{s} {s}\n", .{ c.rank, c.suit });
+        print("{s} of {s}\n", .{ c.rank, c.suit });
     }
+    print("\n", .{});
 }
 
 fn shuffleDeck(deck: Deck) Deck {
@@ -53,6 +90,21 @@ fn generateDeck() Deck {
         }
     }
     return deck;
+}
+
+test "Deal Cards to Players" {
+    const deck = generateDeck();
+    const gameDeck = shuffleDeck(deck);
+    const players = dealCardsToPlayers(gameDeck);
+    for (players) |p| {
+        printPlayer(p);
+    }
+}
+
+test "Random Number Generation" {
+    const rand = generateRandomNumber();
+    try std.testing.expect(rand >= 0);
+    try std.testing.expect(rand <= 51);
 }
 
 test "Generated Deck matches a deck that has been shuffled and sorted" {
