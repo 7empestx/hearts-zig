@@ -36,6 +36,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const spoon_mod = b.addModule("spoon", .{
+        .root_source_file = b.path("deps/zig-spoon/import.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    exe.root_module.addImport("spoon", spoon_mod);
+
     exe.verbose_link = false;
 
     // This declares intent for the executable to be installed into the

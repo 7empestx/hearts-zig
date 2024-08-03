@@ -1,6 +1,7 @@
 const std = @import("std");
 const print = std.debug.print;
 const RndGen = std.rand.DefaultPrng;
+const spoon_menu = @import("spoon_menu.zig");
 
 const cards_in_deck: u8 = 52;
 const player_count: u8 = 4;
@@ -12,6 +13,8 @@ const Player = struct { player_cards: [cards_per_player]Card };
 const Game = struct { players: [player_count]Player };
 
 pub fn main() !void {
+    try spoon_menu.spoonInit();
+
     // Create a base deck of cards
     const deck = generateDeck();
 
