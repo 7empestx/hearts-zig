@@ -11,9 +11,10 @@ const Card = struct { suit: []const u8, rank: []const u8 };
 const Deck = struct { cards: [cards_in_deck]Card };
 const Player = struct { player_cards: [cards_per_player]Card };
 const Game = struct { players: [player_count]Player };
+const Passing = enum { Right, Left, Across };
 
 pub fn main() !void {
-    try spoon_menu.spoonInit();
+    //try spoon_menu.spoonInit();
 
     // Create a base deck of cards
     const deck = generateDeck();
@@ -24,13 +25,36 @@ pub fn main() !void {
     // Assign the first 13 cards to the first player and so on
     const players = dealCardsToPlayers(gameDeck);
     printPlayer(players[0]);
-    printPlayer(players[1]);
-    printPlayer(players[2]);
-    printPlayer(players[3]);
 
     // Create game
     const game = Game{ .players = players };
     _ = game;
+
+    try readPlayerCardSelection();
+}
+
+fn readPlayerCardSelection() !void {
+    const firstCard = try userInput("first");
+    const secondCard = try userInput("second");
+    const thirdCard = try userInput("third");
+    passCards(firstCard, secondCard, thirdCard);
+}
+
+fn passCards(firstCard: u64, secondCard: u64, thirdCard: u64) void {
+    // Implement the logic for passing cards here
+    std.debug.print("Passing cards: {d}, {d}, {d}\n", .{ firstCard, secondCard, thirdCard });
+}
+
+fn userInput(cardString: []const u8) !u64 {
+    const stdout = std.io.getStdOut().writer();
+    const stdin = std.io.getStdIn().reader();
+    try stdout.print("Select the {s} card to pass to the right: ", .{cardString});
+    var buf: [10]u8 = undefined;
+    if (try stdin.readUntilDelimiterOrEof(buf[0..], '\n')) |user_input| {
+        return std.fmt.parseInt(u64, user_input, 10);
+    } else {
+        return error.NoInput;
+    }
 }
 
 fn dealCardsToPlayers(gameDeck: Deck) [4]Player {
@@ -49,9 +73,9 @@ fn dealCardsToPlayers(gameDeck: Deck) [4]Player {
 }
 
 fn printPlayer(player: Player) void {
-    print("Printing Player\n", .{});
-    for (player.player_cards) |c| {
-        print("{s} of {s}\n", .{ c.rank, c.suit });
+    print("Printing Player Cards\n", .{});
+    for (player.player_cards, 0..) |c, idx| {
+        print("{}: {s} of {s}\n", .{ idx, c.rank, c.suit });
     }
     print("\n", .{});
 }
